@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title id="app-title">Royal App</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root { --primary: #2d4a4a; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', sans-serif; }
+        body { background: #fff; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        
+        /* الهيدر */
+        .header { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f1f1; background: #fff; z-index: 10; }
+        .header h3 { font-size: 1rem; color: var(--primary); font-weight: 600; }
+        #logo-place img { height: 25px; }
+
+        /* منطقة الويب فيو */
+        .webview { flex: 1; background: #fafafa; position: relative; }
+        iframe { width: 100%; height: 100%; border: none; }
+
+        /* الشريط السفلي */
+        .footer { height: 70px; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #f1f1f1; padding-bottom: 5px; background: #fff; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: #94a3b8; cursor: pointer; flex: 1; transition: 0.3s; }
+        .nav-item.active { color: var(--primary); }
+        .nav-item span { font-size: 10px; margin-top: 4px; }
+
+        /* المنيو الجانبي (Drawer) */
+        #side-menu { position: fixed; top: 0; right: -280px; width: 280px; height: 100%; background: #fff; z-index: 100; transition: 0.4s; box-shadow: -5px 0 15px rgba(0,0,0,0.1); padding: 20px; }
+        #side-menu.open { right: 0; }
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); display: none; z-index: 90; }
+    </style>
+</head>
+<body>
+
+    <header class="header">
+        <i data-lucide="menu" onclick="toggleMenu()" style="width:22px; cursor:pointer;"></i>
+        <div id="logo-place"><h3 id="display-title">Royal App</h3></div>
+        <i data-lucide="bell" onclick="smartNavigate('notifications')" style="width:22px; cursor:pointer;"></i>
+    </header>
+
+    <div id="side-menu">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <h3 style="color:var(--primary)">القائمة</h3>
+            <i data-lucide="x" onclick="toggleMenu()" style="cursor:pointer"></i>
+        </div>
+        </div>
+    <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
+
+    <div class="webview">
+        <iframe src="about:blank" id="main-frame"></iframe>
+    </div>
+
+    <nav class="footer">
+        <div class="nav-item active" onclick="smartNavigate('home', this)"><i data-lucide="home"></i><span>الرئيسية</span></div>
+        <div class="nav-item" onclick="smartNavigate('chat', this)"><i data-lucide="message-circle"></i><span>الدردشة</span></div>
+        <div class="nav-item" onclick="smartNavigate('add', this)"><i data-lucide="plus-square" style="width:30px; height:30px;"></i><span>إضافة</span></div>
+        <div class="nav-item" onclick="smartNavigate('search', this)"><i data-lucide="search"></i><span>البحث</span></div>
+        <div class="nav-item" onclick="smartNavigate('profile', this)"><i data-lucide="user"></i><span>حسابي</span></div>
+    </nav>
+
+    <script>
+        let config = {};
+        const iframe = document.getElementById('main-frame');
+
+        function initApp() {
+            config = JSON.parse(localStorage.getItem('royal_pro_config'));
+            if(!config) return;
+
+            // تطبيق الإعدادات المرئية
+            document.documentElement.style.setProperty('--primary', config.color);
+            document.getElementById('display-title').innerText = config.name;
+            if(config.logo) document.getElementById('logo-place').innerHTML = `<img src="${config.logo}">`;
+            
+            // تحميل الرابط الرئيسي
+            iframe.src = config.url;
+            lucide.createIcons();
+        }
+
+        // حقن الـ CSS عند كل تحميل صفحة
+        iframe.onload = function() {
+            if (config && config.hideElements) {
+                try {
+                    const style = document.createElement('style');
+                    style.textContent = `${config.hideElements} { display: none !important; }`;
+                    iframe.contentDocument.head.appendChild(style);
+                } catch (e) { console.warn("CORS Block: لا يمكن إخفاء عناصر من دومين خارجي."); }
+            }
+        };
+
+        function smartNavigate(type, el) {
+            if(el) {
+                document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                el.classList.add('active');
+            }
+            const baseUrl = config.url.endsWith('/') ? config.url.slice(0, -1) : config.url;
+            
+            switch(type) {
+                case 'home': iframe.src = baseUrl; break;
+                case 'chat': iframe.src = baseUrl + "/" + (config.paths.chat || "contact"); break;
+                case 'add': iframe.src = baseUrl + "/" + (config.paths.add || "add"); break;
+                case 'profile': iframe.src = baseUrl + "/" + (config.paths.profile || "login"); break;
+                case 'search': iframe.src = baseUrl + "/search"; break;
+            }
+        }
+
+        function toggleMenu() {
+            document.getElementById('side-menu').classList.toggle('open');
+            document.getElementById('overlay').style.display = 
+                document.getElementById('side-menu').classList.contains('open') ? 'block' : 'none';
+        }
+
+        window.onload = initApp;
+    </script>
+</body>
+</html>

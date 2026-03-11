@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة تحكم رويال برو</title>
+    <style>
+        :root { --primary: #2d4a4a; }
+        body { font-family: 'Segoe UI', sans-serif; padding: 20px; background: #f4f7f6; padding-bottom: 120px; }
+        .card { background: white; padding: 20px; border-radius: 20px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-top: 5px solid var(--primary); }
+        h2 { color: var(--primary); text-align: center; margin-bottom: 25px; }
+        label { display: block; margin-top: 15px; font-weight: bold; font-size: 0.85rem; color: #555; }
+        input, select { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #e2e8f0; border-radius: 12px; }
+        .color-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 6px; margin-top: 10px; max-height: 120px; overflow-y: auto; padding: 10px; }
+        .color-box { aspect-ratio: 1; border-radius: 8px; cursor: pointer; border: 2px solid transparent; }
+        .btn-save { position: fixed; bottom: 20px; left: 20px; right: 20px; padding: 18px; background: var(--primary); color: white; border: none; border-radius: 20px; font-weight: bold; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <h2>Master Control - رويال برو</h2>
+
+    <div class="card">
+        <h3>1. الهوية الأساسية</h3>
+        <label>اسم التطبيق</label>
+        <input type="text" id="app-name">
+        <label>رابط الموقع الرئيسي</label>
+        <input type="text" id="app-url" placeholder="https://example.com">
+        <label>رابط الشعار</label>
+        <input type="text" id="app-logo">
+    </div>
+
+    <div class="card" style="border-top-color: #ef4444;">
+        <h3>2. تنظيف الواجهة (Injection)</h3>
+        <label>عناصر لإخفائها (CSS Selectors)</label>
+        <input type="text" id="hide-elements" placeholder=".header, .footer, .mobile-nav">
+        <p style="font-size: 0.7rem; color: #666; margin-top: 5px;">* ادخل الكلاسات التي تريد حذفها من موقع العميل ليظهر قالبك فقط.</p>
+    </div>
+
+    <div class="card">
+        <h3>3. الألوان والخطوط</h3>
+        <div class="color-grid" id="color-palette"></div>
+        <input type="hidden" id="selected-color" value="#2d4a4a">
+    </div>
+
+    <div class="card">
+        <h3>4. مسارات الأزرار</h3>
+        <label>مسار الدردشة</label>
+        <input type="text" id="path-chat" value="contact">
+        <label>مسار الحساب</label>
+        <input type="text" id="path-profile" value="login">
+        <label>مسار الإضافة</label>
+        <input type="text" id="path-add" value="add">
+    </div>
+
+    <button class="btn-save" onclick="saveData()">حفظ وإرسال للقالب</button>
+
+    <script>
+        // توليد الألوان
+        const palette = document.getElementById('color-palette');
+        for(let i=0; i<100; i++) {
+            const color = `hsl(${i * 3.6}, 70%, 40%)`;
+            const box = document.createElement('div');
+            box.className = 'color-box';
+            box.style.backgroundColor = color;
+            box.onclick = () => { document.getElementById('selected-color').value = color; alert('تم اختيار اللون'); };
+            palette.appendChild(box);
+        }
+
+        function saveData() {
+            const config = {
+                name: document.getElementById('app-name').value,
+                url: document.getElementById('app-url').value,
+                logo: document.getElementById('app-logo').value,
+                color: document.getElementById('selected-color').value,
+                hideElements: document.getElementById('hide-elements').value, // تم الإصلاح هنا
+                paths: {
+                    chat: document.getElementById('path-chat').value,
+                    profile: document.getElementById('path-profile').value,
+                    add: document.getElementById('path-add').value
+                }
+            };
+            localStorage.setItem('royal_pro_config', JSON.stringify(config));
+            alert('تم الحفظ! افتح القالب الآن.');
+        }
+    </script>
+</body>
+</html>
